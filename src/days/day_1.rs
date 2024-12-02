@@ -23,22 +23,22 @@ fn similarity_score(a: u32, occurances: u32) -> u32 {
 }
 
 pub fn part_a(input: &str) -> u32 {
-    let (col1, col2) = parse_columns(input);
-    let sorted_col1 = col1.into_iter().sorted().collect::<Vec<u32>>();
-    let sorted_col2 = col2.into_iter().sorted().collect::<Vec<u32>>();
-    let distances = sorted_col1
+    let (left, right) = parse_columns(input);
+    let sorted_left = left.into_iter().sorted().collect::<Vec<u32>>();
+    let sorted_right = right.into_iter().sorted().collect::<Vec<u32>>();
+    let distances = sorted_left
         .iter()
-        .zip(sorted_col2.iter())
+        .zip(sorted_right.iter())
         .map(|(a, b)| distance(*a, *b));
     return distances.sum();
 }
 
 pub fn part_b(input: &str) -> u32 {
-    let (col1, col2) = parse_columns(input);
-    let col2_counts = col2.into_iter().counts();
-    let similarity_scores = col1
+    let (left, right) = parse_columns(input);
+    let right_counts = right.into_iter().counts();
+    let similarity_scores = left
         .into_iter()
-        .map(|a| similarity_score(a, *col2_counts.get(&a).unwrap_or(&0) as u32));
+        .map(|a| similarity_score(a, *right_counts.get(&a).unwrap_or(&0) as u32));
     return similarity_scores.sum();
 }
 
