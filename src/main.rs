@@ -47,7 +47,7 @@ fn main() {
     {
         // this block limits scope of borrows by ap.refer() method
         let mut ap = ArgumentParser::new();
-        ap.set_description("Run Advent of Code 2022.");
+        ap.set_description("Run Advent of Code 2024.");
         ap.refer(&mut day)
             .add_option(&["-d", "--day"], Store, "Day to run");
         ap.refer(&mut part)
@@ -77,6 +77,8 @@ fn main() {
         (4, 'b') => day_4::part_b(&input).into(),
         (5, 'a') => day_5::part_a(&input).into(),
         (5, 'b') => day_5::part_b(&input).into(),
+        (6, 'a') => day_6::part_a(&input).into(),
+        (6, 'b') => day_6::part_b(&input).into(),
         (_, _) => panic!("Unrecognised day [{}] part [{}]", day, part),
     };
 
