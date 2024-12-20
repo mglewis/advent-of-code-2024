@@ -1,4 +1,3 @@
-
 struct Direction {
     x: i64,
     y: i64,
@@ -8,10 +7,26 @@ struct Direction {
 static DIRECTION_CHARS: [char; 4] = ['^', '>', 'v', '<'];
 
 static DIRECTIONS: [Direction; 4] = [
-    Direction { x: 0, y: -1, symbol: '^' },
-    Direction { x: 1, y: 0, symbol: '>' },
-    Direction { x: 0, y: 1, symbol: 'v' },
-    Direction { x: -1, y: 0, symbol: '<' },
+    Direction {
+        x: 0,
+        y: -1,
+        symbol: '^',
+    },
+    Direction {
+        x: 1,
+        y: 0,
+        symbol: '>',
+    },
+    Direction {
+        x: 0,
+        y: 1,
+        symbol: 'v',
+    },
+    Direction {
+        x: -1,
+        y: 0,
+        symbol: '<',
+    },
 ];
 
 fn build_grid(input: &str) -> Vec<Vec<char>> {
@@ -32,7 +47,10 @@ fn find_start_position(grid: &Vec<Vec<char>>) -> (i64, i64) {
 fn count_visited_cells(grid: &Vec<Vec<char>>) -> u32 {
     grid.iter().fold(0, |acc, row| {
         // check cell is not in DIRECTION_CHARS
-        acc + row.iter().filter(|&&cell| DIRECTION_CHARS.contains(&cell)).count() as u32
+        acc + row
+            .iter()
+            .filter(|&&cell| DIRECTION_CHARS.contains(&cell))
+            .count() as u32
     })
 }
 
@@ -46,12 +64,7 @@ fn print_grid(grid: &Vec<Vec<char>>) {
     println!("\n\n");
 }
 
-fn process(grid: &Vec<Vec<char>>) -> &Vec<Vec<char>> {
-
-}
-
-pub fn part_a(input: &str) -> u32 {
-    let mut grid = build_grid(input);
+fn process(grid: &mut Vec<Vec<char>>) -> &Vec<Vec<char>> {
     let mut direction_iter = DIRECTIONS.iter().cycle();
 
     let mut position = find_start_position(&grid);
@@ -65,21 +78,25 @@ pub fn part_a(input: &str) -> u32 {
             || next_position.1 >= grid.len() as i64;
 
         if next_position_is_out_of_bounds {
-            print_grid(&grid);
-            return count_visited_cells(&grid);
+            return grid;
         }
 
         let next_position_is_obstacle =
             grid[next_position.1 as usize][next_position.0 as usize] == '#';
 
         if next_position_is_obstacle {
-            print_grid(&grid);
             direction = direction_iter.next().unwrap();
         } else {
             position = next_position;
             grid[position.1 as usize][next_position.0 as usize] = direction.symbol;
         }
     }
+}
+
+pub fn part_a(input: &str) -> u32 {
+    let mut grid = build_grid(input);
+    process(&mut grid);
+    count_visited_cells(&grid)
 }
 
 pub fn part_b(input: &str) -> u32 {
