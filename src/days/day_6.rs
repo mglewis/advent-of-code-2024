@@ -29,6 +29,12 @@ static DIRECTIONS: [Direction; 4] = [
     },
 ];
 
+#[derive(PartialEq, Clone, Copy)]
+enum Outcome {
+    LoopDetected,
+    ReachedBoundary,
+}
+
 fn build_grid(input: &str) -> Vec<Vec<char>> {
     input.lines().map(|line| line.chars().collect()).collect()
 }
@@ -54,7 +60,7 @@ fn count_visited_cells(grid: &Vec<Vec<char>>) -> u32 {
     })
 }
 
-fn print_grid(grid: &Vec<Vec<char>>) {
+fn _print_grid(grid: &Vec<Vec<char>>) {
     for row in grid {
         for cell in row {
             print!("{}", cell);
@@ -64,7 +70,7 @@ fn print_grid(grid: &Vec<Vec<char>>) {
     println!("\n\n");
 }
 
-fn process(grid: &mut Vec<Vec<char>>) -> &Vec<Vec<char>> {
+fn process(grid: &mut Vec<Vec<char>>) -> Outcome {
     let mut direction_iter = DIRECTIONS.iter().cycle();
 
     let mut position = find_start_position(&grid);
@@ -78,14 +84,19 @@ fn process(grid: &mut Vec<Vec<char>>) -> &Vec<Vec<char>> {
             || next_position.1 >= grid.len() as i64;
 
         if next_position_is_out_of_bounds {
-            return grid;
+            return Outcome::ReachedBoundary;
         }
 
         let next_position_is_obstacle =
             grid[next_position.1 as usize][next_position.0 as usize] == '#';
 
+        let loop_detected =
+            grid[next_position.1 as usize][next_position.0 as usize] == direction.symbol;
+
         if next_position_is_obstacle {
             direction = direction_iter.next().unwrap();
+        } else if loop_detected {
+            return Outcome::LoopDetected;
         } else {
             position = next_position;
             grid[position.1 as usize][next_position.0 as usize] = direction.symbol;
@@ -95,12 +106,54 @@ fn process(grid: &mut Vec<Vec<char>>) -> &Vec<Vec<char>> {
 
 pub fn part_a(input: &str) -> u32 {
     let mut grid = build_grid(input);
-    process(&mut grid);
-    count_visited_cells(&grid)
+    let outcome = process(&mut grid);
+    match outcome {
+        Outcome::LoopDetected => panic!("Loop detected"),
+        Outcome::ReachedBoundary => count_visited_cells(&grid),
+    }
 }
 
 pub fn part_b(input: &str) -> u32 {
-    1
+    let base_grid = build_grid(input);
+    let mut part_a_grid = base_grid.clone();
+
+    let outcome = process(&mut part_a_grid);
+    match outcome {
+        Outcome::LoopDetected => panic!("Loop detected in part a grid"),
+        Outcome::ReachedBoundary => count_visited_cells(&base_grid),
+    };
+
+    let grid_variants = build_grid_variants(base_grid, &part_a_grid);
+
+    let outcomes = grid_variants
+        .into_iter()
+        .map(|mut g| process(&mut g))
+        .collect::<Vec<Outcome>>();
+
+    outcomes
+        .into_iter()
+        .filter(|&outcome| outcome == Outcome::LoopDetected)
+        .count() as u32
+}
+
+fn build_grid_variants(
+    base_grid: Vec<Vec<char>>,
+    part_a_grid: &Vec<Vec<char>>,
+) -> Vec<Vec<Vec<char>>> {
+    let mut grid_variants = Vec::new();
+
+    for i in 0..base_grid.len() {
+        for j in 0..base_grid[i].len() {
+            let visited_in_initial_grid = DIRECTION_CHARS.contains(&part_a_grid[i][j]);
+            let not_visited_in_base_grid = base_grid[i][j] != '^';
+            if visited_in_initial_grid && not_visited_in_base_grid {
+                let mut new_grid = base_grid.clone();
+                new_grid[i][j] = '#';
+                grid_variants.push(new_grid);
+            }
+        }
+    }
+    grid_variants
 }
 
 #[cfg(test)]
@@ -117,6 +170,6 @@ mod tests {
     #[test]
     fn test_part_b() {
         let input = read_test_file(6);
-        assert_eq!(part_b(&input), 1);
+        assert_eq!(part_b(&input), 6);
     }
 }
