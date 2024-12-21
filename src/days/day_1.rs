@@ -30,7 +30,7 @@ pub fn part_a(input: &str) -> u32 {
         .iter()
         .zip(sorted_right.iter())
         .map(|(a, b)| distance(*a, *b));
-    return distances.sum();
+    distances.sum()
 }
 
 pub fn part_b(input: &str) -> u32 {
@@ -39,7 +39,7 @@ pub fn part_b(input: &str) -> u32 {
     let similarity_scores = left
         .into_iter()
         .map(|a| similarity_score(a, *right_counts.get(&a).unwrap_or(&0) as u32));
-    return similarity_scores.sum();
+    similarity_scores.sum()
 }
 
 #[cfg(test)]
